@@ -1,3 +1,7 @@
+## 
+## For elasticsearch look at here
+## https://github.com/kubernetes/examples/tree/master/staging/elasticsearch
+##
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
