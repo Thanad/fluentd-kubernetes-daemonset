@@ -1,0 +1,86 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: graylog
+  namespace: kube-system
+  labels:
+    component: graylog
+    role: master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: graylog
+      role: master
+  template:
+    metadata:
+      labels:
+        component: graylog
+        role: master
+    spec:
+      containers:
+      - name: graylog
+        image: graylog/graylog:2.4.3-1
+        ports:
+        - containerPort: 12300
+          name: tcpin
+          protocol: TCP
+        - containerPort: 9000
+          name: graylog-api
+          protocol: TCP
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: "GRAYLOG_ELASTICSEARCH_HOSTS"
+          value: "http://elasticsearch:9200/"
+        - name: "GRAYLOT_ELASTICSEARCH_DISCOVERY_ENABLED"
+          value: "true"
+        - name: "GRAYLOG_MONGODB_URI"
+          value: "mongodb://mongo:27017/graylog"
+        - name: "GRAYLOG_PASSWORD_SECRET"
+          value: "somepasswordpepper"
+        - name: "GRAYLOG_ROOT_PASSWORD_SHA2"
+          value: "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
+        - name: "GRAYLOG_WEB_ENDPOINT_URI"
+          value: "http://127.0.0.1:9000/api"
+        - name: "GRAYLOG_ROOT_TIMEZONE"
+          value: "Asia/Bangkok"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    component: graylog
+    role: master
+  name: graylog
+  namespace: kube-system
+spec:
+  type: LoadBalancer
+  sessionAffinity: None
+  ports:
+  - name: http
+    port: 9000
+    targetPort: 9000
+    protocol: TCP
+  - name: tcpin1
+    port: 12201
+    targetPort: 12201
+    protocol: TCP
+  - name: tcpin2
+    port: 12202
+    targetPort: 12202
+    protocol: TCP
+  - name: tcpin3
+    port: 12203
+    targetPort: 12203
+    protocol: TCP
+  selector:
+    component: graylog
+    role: master
+  
